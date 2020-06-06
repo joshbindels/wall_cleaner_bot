@@ -37,9 +37,14 @@ function sendMessage()
 var elInfo = document.getElementById("info");
 var elHeader = document.getElementById("header");
 var elData = document.getElementById("data");
+var el_canvas = document.getElementById("canvas");
+var ctx = el_canvas.getContext("2d");
+var map_width;
+var map_height;
+var map_data;
 
 
-var listener = new ROSLIB.Topic(
+var map_listener = new ROSLIB.Topic(
     {
         ros: ros,
         name: '/map',
@@ -47,31 +52,87 @@ var listener = new ROSLIB.Topic(
     }
 );
 
-listener.subscribe(function(message)
+map_listener.subscribe(function(message)
 {
     document.getElementById("loadscreen").style.display = "none";
     document.getElementById("content").style.display = "initial";
-    var map_width = message.info.width;
-    var map_height = message.info.height;
-    var el_canvas = document.getElementById("canvas");
-    var ctx = el_canvas.getContext("2d");
+    map_width = message.info.width;
+    map_height = message.info.height;
+    map_data = message.data;
+    console.log(message);
     el_canvas.width = map_width;
     el_canvas.height = map_height;
-    RenderMap(ctx, message.data, map_width);
+    RenderMap();
 });
 
-function RenderMap(ctx, data, width)
+/*
+var odom_listener = new ROSLIB.Topic(
+{
+    ros: ros,
+    name: "/odom",
+    messageType: "nav_msgs/Odometry"
+});
+
+var robot_x_pos;
+var robot_y_pos;
+var d = false;
+odom_listener.subscribe(function(message)
+{
+    if(!d)
+    {
+        console.log(message);
+        d = true;
+    }
+    else
+    {
+        return;
+    }
+    robot_x_pos = message.twist.twist.linear.x * 1e7;
+    robot_y_pos = message.twist.twist.linear.y * 1e7;
+    //console.log("y: ", robot_y_pos);
+    RenderRobot();
+});
+*/
+
+var image_listener = new ROSLIB.Topic(
+{
+    ros: ros,
+    name: "/camera/rgb/image_raw/compressed",
+    messageType: "sensor_msgs/CompressedImage"
+});
+
+
+function GetImageData()
+{
+    document.getElementById("GetImageButton").disabled = true;
+    image_listener.subscribe(function(message)
+    {
+        var img_element = document.getElementById("img");
+        img_element.setAttribute("src", "data:image/jpg;base64," + message.data);
+        image_listener.unsubscribe()
+        console.log("Unsubscribed from topic /camera/rgb/image_raw");
+        document.getElementById("GetImageButton").disabled = false;
+});
+}
+
+function RenderRobot()
+{
+    ctx.fillStyle = "#F00";
+    ctx.fillRect(robot_x_pos, robot_y_pos, 5, 5);
+}
+
+function RenderMap()
 {
     var x_pos = 0;
     var y_pos = 0;
     ctx.fillStyle = "#FFF";
-    for(var i=0; i<data.length; i++)
+    for(var i=0; i<map_data.length; i++)
     {
-        if(data[i] == 100)
+        if(map_data[i] == 100)
         {
             ctx.fillRect(x_pos, y_pos, 1, 1);
         }
-        if(x_pos == width)
+        if(x_pos == map_width)
         {
             x_pos = 0;
             y_pos++;

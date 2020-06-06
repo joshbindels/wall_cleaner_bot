@@ -17,16 +17,22 @@
 
 <div id="content" style="display:none;">
 
-<h1>Simple roslib Example</h1>
+<h1>Cleaner bot web interface</h1>
 <button onclick="sendMessage();">
-Click me
+Send Hello!
 </button>
-<h1>Info</h1>
+
+<button id="GetImageButton" onclick="GetImageData();">
+Get Image data
+</button>
+<h1>Map</h1>
 <p id="info"></p>
 <br/>
 
 <canvas id="canvas" style="background:black;"></canvas>
 </div>
+
+<img id="img"></img>
 
 <script type="text/javascript" src="{{url_for('static', filename='js/main.js')}}">
 </script>
