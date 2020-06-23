@@ -23,17 +23,24 @@ var cmdChatter = new ROSLIB.Topic({
     messageType : 'std_msgs/String'
 });
 
-var msg = new ROSLIB.Message({
-    data: "Hello"
-});
+var chatter_messages = [
+    new ROSLIB.Message({data: "start"}),
+    new ROSLIB.Message({data: "stop"})
+]
 
-function sendMessage()
+function SendMessageStart()
 {
-    cmdChatter.publish(msg);
+    cmdChatter.publish(chatter_messages[0]);
+}
+
+function SendMessageStop()
+{
+    cmdChatter.publish(chatter_messages[1]);
 }
 
 // Subscribing to a Topic
 // -----------------------
+/*
 var elInfo = document.getElementById("info");
 var elHeader = document.getElementById("header");
 var elData = document.getElementById("data");
@@ -64,6 +71,7 @@ map_listener.subscribe(function(message)
     el_canvas.height = map_height;
     RenderMap();
 });
+*/
 
 /*
 var odom_listener = new ROSLIB.Topic(
@@ -97,22 +105,20 @@ odom_listener.subscribe(function(message)
 var image_listener = new ROSLIB.Topic(
 {
     ros: ros,
-    name: "/camera/rgb/image_raw/compressed",
+    name: "photographer",
     messageType: "sensor_msgs/CompressedImage"
 });
 
+image_listener.subscribe(function(message)
+{
+    console.log("Received image");
+    var img_element = document.getElementById("img");
+    img_element.setAttribute("src", "data:image/jpg;base64," + message.data);
+});
 
 function GetImageData()
 {
     document.getElementById("GetImageButton").disabled = true;
-    image_listener.subscribe(function(message)
-    {
-        var img_element = document.getElementById("img");
-        img_element.setAttribute("src", "data:image/jpg;base64," + message.data);
-        image_listener.unsubscribe()
-        console.log("Unsubscribed from topic /camera/rgb/image_raw");
-        document.getElementById("GetImageButton").disabled = false;
-});
 }
 
 function RenderRobot()
